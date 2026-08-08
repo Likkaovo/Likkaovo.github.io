@@ -21,19 +21,25 @@ const dots = [...document.querySelectorAll(".dot")];
 const nextSceneButtons = document.querySelectorAll("[data-next-scene]");
 const backButtons = document.querySelectorAll("[data-back-to]");
 const wishButton = document.querySelector("#wishButton");
-const memoryHub = document.querySelector("#memoryHub");
 const albumGrid = document.querySelector("#albumGrid");
+const routeTrack = document.querySelector("#routeTrack");
+const mapRunners = document.querySelector("#mapRunners");
+const journeyPopup = document.querySelector("#journeyPopup");
+const popupEyebrow = document.querySelector("#popupEyebrow");
+const popupTitle = document.querySelector("#popupTitle");
+const journeyStatus = document.querySelector("#journeyStatus");
+const restartJourney = document.querySelector("#restartJourney");
+const memoryOverlay = document.querySelector("#memoryOverlay");
+const closeMemoryButtons = document.querySelectorAll("[data-close-memory]");
 const detailEyebrow = document.querySelector("#detailEyebrow");
 const detailTitle = document.querySelector("#detailTitle");
 const detailText = document.querySelector("#detailText");
 const detailText2 = document.querySelector("#detailText2");
-const detailImage = document.querySelector("#detailImage");
-const detailImageSlot = detailImage.closest(".story-photo-slot");
+const detailImageSlot = document.querySelector("#detailImage").closest(".story-photo-slot");
 
 const sceneThemes = {
   intro: "intro",
   map: "map",
-  memory: "memory",
   album: "album",
   final: "final",
 };
@@ -43,15 +49,24 @@ const detailCopyTemplates = [
   "如果你想继续细化内容，可以写当时发生了什么、你记住了什么、为什么这件事会一直留到现在。",
 ];
 
+const FLAG_SPACING = 460;
+const journey = {
+  index: 0,
+  activeTimer: null,
+  isPopupOpen: false,
+  isDetailOpen: false,
+  isFinished: false,
+  hasStarted: false,
+};
+
 let currentScene = "intro";
-let currentMemoryIndex = 0;
 
 function buildBrokenMarkup(title) {
   return `
     <div class="broken-copy">
       <strong>${title}</strong>
-      <small>这张图片是 HEIC 或当前浏览器不支持的格式</small>
-      <small>建议转成 JPG / PNG 后替换</small>
+      <small>这张图片加载失败</small>
+      <small>请确认文件路径和格式</small>
     </div>
   `;
 }
@@ -65,22 +80,129 @@ function applyImageFallback(img, title) {
   });
 }
 
-function renderMap() {
-  memoryHub.innerHTML = memories
+function clearJourneyTimer() {
+  if (journey.activeTimer) {
+    clearTimeout(journey.activeTimer);
+    journey.activeTimer = null;
+  }
+}
+
+function setJourneyTimer(callback, delay) {
+  clearJourneyTimer();
+  journey.activeTimer = setTimeout(callback, delay);
+}
+
+function renderJourney() {
+  routeTrack.innerHTML = memories
     .map(
-      (memory, index) => `
-        <button class="hub-item" type="button" data-memory-index="${index}">
-          <span class="hub-index">${String(index + 1).padStart(2, "0")}</span>
-          <strong>${memory.title}</strong>
-          <small>点击查看这一段回忆</small>
+      (_, index) => `
+        <button
+          class="route-flag"
+          type="button"
+          data-route-index="${index}"
+          style="left: ${index * FLAG_SPACING}px"
+          aria-label="Memory ${index + 1}"
+        >
+          <span>${String(index + 1).padStart(2, "0")}</span>
         </button>
       `,
     )
     .join("");
 
-  memoryHub.querySelectorAll("[data-memory-index]").forEach((button) => {
-    button.addEventListener("click", () => openMemory(Number(button.dataset.memoryIndex)));
+  routeTrack.querySelectorAll("[data-route-index]").forEach((flag) => {
+    flag.addEventListener("click", () => {
+      const index = Number(flag.dataset.routeIndex);
+
+      if (index === journey.index && currentScene === "map" && !journey.isDetailOpen) {
+        journey.index = index;
+        arriveAtCurrentFlag();
+      }
+    });
   });
+}
+
+function updateFlagState() {
+  routeTrack.querySelectorAll("[data-route-index]").forEach((flag) => {
+    const index = Number(flag.dataset.routeIndex);
+
+    flag.classList.toggle("is-active", index === journey.index && journey.isPopupOpen);
+    flag.classList.toggle("is-visited", index < journey.index);
+  });
+}
+
+function moveGroundTo(index) {
+  routeTrack.style.transform = `translateX(${-index * FLAG_SPACING}px)`;
+}
+
+function startJourney() {
+  if (journey.hasStarted || journey.isPopupOpen || journey.isDetailOpen || journey.isFinished) {
+    return;
+  }
+
+  journey.hasStarted = true;
+  setJourneyTimer(() => advanceJourney(), 450);
+}
+
+function advanceJourney() {
+  if (currentScene !== "map" || journey.isDetailOpen) {
+    return;
+  }
+
+  if (journey.index >= memories.length) {
+    finishJourney();
+    return;
+  }
+
+  journey.isPopupOpen = false;
+  journeyPopup.classList.remove("is-visible");
+  updateFlagState();
+  journeyStatus.textContent = `前往第 ${journey.index + 1} 站`;
+  moveGroundTo(journey.index);
+  setJourneyTimer(() => arriveAtCurrentFlag(), journey.index === 0 ? 650 : 2200);
+}
+
+function arriveAtCurrentFlag() {
+  if (currentScene !== "map") {
+    return;
+  }
+
+  const memory = memories[journey.index];
+
+  journey.isPopupOpen = true;
+  popupEyebrow.textContent = `Memory ${String(journey.index + 1).padStart(2, "0")}`;
+  popupTitle.textContent = memory.title;
+  journeyStatus.textContent = `抵达：${memory.title}`;
+  mapRunners.classList.add("is-jumping");
+  updateFlagState();
+
+  setJourneyTimer(() => {
+    mapRunners.classList.remove("is-jumping");
+    journeyPopup.classList.add("is-visible");
+  }, 520);
+}
+
+function finishJourney() {
+  journey.isFinished = true;
+  journey.isPopupOpen = false;
+  journeyPopup.classList.remove("is-visible");
+  journeyStatus.textContent = "所有回忆都已经走完啦";
+  updateFlagState();
+}
+
+function restartJourneyFlow() {
+  clearJourneyTimer();
+  journey.index = 0;
+  journey.isPopupOpen = false;
+  journey.isDetailOpen = false;
+  journey.isFinished = false;
+  journey.hasStarted = false;
+  journeyPopup.classList.remove("is-visible");
+  memoryOverlay.classList.remove("is-open");
+  memoryOverlay.setAttribute("aria-hidden", "true");
+  moveGroundTo(0);
+  updateFlagState();
+  journeyStatus.textContent = "准备出发";
+  startJourney();
 }
 
 function renderAlbum() {
@@ -115,13 +237,12 @@ function renderAlbum() {
 function updateDetail(index) {
   const memory = memories[index];
 
-  currentMemoryIndex = index;
   detailEyebrow.textContent = `Memory ${String(index + 1).padStart(2, "0")}`;
   detailTitle.textContent = memory.title;
   detailText.textContent = `这一页对应的是“${memory.title}”。你可以把当时最想写下来的那一句话，直接补在这里。`;
   detailText2.textContent = detailCopyTemplates[index % detailCopyTemplates.length];
   detailImageSlot.classList.remove("is-broken");
-  detailImageSlot.innerHTML = `<img id="detailImage" src="${memory.src}" alt="${memory.title}" />`;
+  detailImageSlot.innerHTML = `<img src="${memory.src}" alt="${memory.title}" />`;
 
   const freshImage = detailImageSlot.querySelector("img");
   applyImageFallback(freshImage, memory.title);
@@ -129,7 +250,27 @@ function updateDetail(index) {
 
 function openMemory(index) {
   updateDetail(index);
-  showScene("memory");
+  journey.isDetailOpen = true;
+  memoryOverlay.classList.add("is-open");
+  memoryOverlay.setAttribute("aria-hidden", "false");
+}
+
+function closeMemory() {
+  if (!journey.isDetailOpen) {
+    return;
+  }
+
+  journey.isDetailOpen = false;
+  journey.isPopupOpen = false;
+  memoryOverlay.classList.remove("is-open");
+  memoryOverlay.setAttribute("aria-hidden", "true");
+  journeyPopup.classList.remove("is-visible");
+  journey.index += 1;
+  updateFlagState();
+
+  if (currentScene === "map") {
+    setJourneyTimer(() => advanceJourney(), 620);
+  }
 }
 
 function showScene(sceneName) {
@@ -144,13 +285,24 @@ function showScene(sceneName) {
     dot.classList.toggle("dot-active", isActive);
   });
 
-  if (currentScene === "memory") {
-    dots.forEach((dot) => {
-      dot.classList.toggle("dot-active", dot.dataset.goScene === "map");
-    });
-  }
-
   document.body.dataset.sceneTheme = sceneThemes[currentScene] || "intro";
+
+  if (currentScene === "map") {
+    if (journey.isFinished) {
+      updateFlagState();
+    } else if (!journey.hasStarted) {
+      startJourney();
+    } else if (!journey.isPopupOpen && !journey.isDetailOpen) {
+      setJourneyTimer(() => advanceJourney(), 350);
+    }
+  } else {
+    clearJourneyTimer();
+    memoryOverlay.classList.remove("is-open");
+    memoryOverlay.setAttribute("aria-hidden", "true");
+    journey.isDetailOpen = false;
+    journey.isPopupOpen = false;
+    journeyPopup.classList.remove("is-visible");
+  }
 }
 
 nextSceneButtons.forEach((button) => {
@@ -165,6 +317,16 @@ backButtons.forEach((button) => {
   button.addEventListener("click", () => showScene(button.dataset.backTo));
 });
 
+journeyPopup.addEventListener("click", () => {
+  openMemory(journey.index);
+});
+
+closeMemoryButtons.forEach((button) => {
+  button.addEventListener("click", () => closeMemory());
+});
+
+restartJourney.addEventListener("click", () => restartJourneyFlow());
+
 if (wishButton) {
   wishButton.addEventListener("click", () => {
     document.body.classList.add("wish-made");
@@ -173,8 +335,8 @@ if (wishButton) {
 }
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && currentScene === "memory") {
-    showScene("map");
+  if (event.key === "Escape" && journey.isDetailOpen) {
+    closeMemory();
   }
 });
 
@@ -182,7 +344,8 @@ setInterval(() => {
   document.body.classList.toggle("stroll-step");
 }, 2200);
 
-renderMap();
+renderJourney();
 renderAlbum();
-updateDetail(currentMemoryIndex);
+updateDetail(0);
+moveGroundTo(0);
 showScene(currentScene);

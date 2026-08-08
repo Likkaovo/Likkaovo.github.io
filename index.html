@@ -47,39 +47,42 @@
 
       <section class="scene" data-scene="map">
         <div class="scene-layout">
-          <div class="content-card map-card">
-            <div class="map-scroll">
+          <div class="content-card map-card journey-card">
+            <div class="journey-header">
               <p class="eyebrow">Stage 02 · Memory Map</p>
               <h2>沿着地图回头看</h2>
               <p class="hint">
-                这里会按 `src` 里的图片数量自动生成节点。每个回忆都能单独点开，再回到这里继续看下一段。
+                小人会沿着地面走到每一个旗子，停下后弹出这一站的回忆卡片。
               </p>
-              <div class="memory-hub" id="memoryHub"></div>
             </div>
 
-            <div class="map-actions">
-              <button class="primary-btn" data-next-scene="album">翻开相册簿</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="scene memory-scene" data-scene="memory">
-        <div class="scene-layout">
-          <div class="content-card story-card">
-            <div class="story-scroll">
-              <button class="back-chip" type="button" data-back-to="map">← 返回总地图</button>
-              <p class="eyebrow" id="detailEyebrow">Memory 01</p>
-              <h2 id="detailTitle">第一次去见你</h2>
-              <div class="story-split">
-                <div class="story-copy">
-                  <p id="detailText">点开地图上的节点后，这里会显示对应的照片和文字。</p>
-                  <p id="detailText2">你后面只要补内容，不需要改结构。</p>
-                </div>
-                <div class="story-photo-slot">
-                  <img id="detailImage" src="src/1第一次去见你.jpg" alt="第一次去见你" />
+            <div class="journey-stage" id="journeyStage">
+              <div class="journey-sky">
+                <span class="journey-cloud cloud-a"></span>
+                <span class="journey-cloud cloud-b"></span>
+                <span class="journey-cloud cloud-c"></span>
+              </div>
+              <div class="journey-viewport">
+                <div class="route-track" id="routeTrack"></div>
+                <div class="route-ground"></div>
+                <div class="map-runners" id="mapRunners">
+                  <img class="map-runner runner-emu" src="src/emu.png" alt="" />
+                  <img class="map-runner runner-mzk" src="src/mzk.png" alt="" />
                 </div>
               </div>
+
+              <button class="journey-popup" id="journeyPopup" type="button" aria-live="polite">
+                <span class="popup-eyebrow" id="popupEyebrow">Memory 01</span>
+                <strong id="popupTitle">第一次去见你</strong>
+                <small>点开查看这一段回忆</small>
+              </button>
+            </div>
+
+            <div class="journey-status" id="journeyStatus">准备出发</div>
+
+            <div class="map-actions">
+              <button class="ghost-btn" id="restartJourney" type="button">重新走一遍</button>
+              <button class="primary-btn" data-next-scene="album">翻开相册簿</button>
             </div>
           </div>
         </div>
@@ -136,6 +139,26 @@
         </div>
       </section>
     </main>
+
+    <section class="memory-overlay" id="memoryOverlay" aria-hidden="true">
+      <div class="memory-backdrop" data-close-memory></div>
+      <div class="memory-shell">
+        <button class="back-chip memory-close" type="button" data-close-memory>← 返回地图继续走</button>
+        <p class="eyebrow" id="detailEyebrow">Memory 01</p>
+        <h2 id="detailTitle">第一次去见你</h2>
+        <div class="story-scroll">
+          <div class="story-split">
+            <div class="story-copy">
+              <p id="detailText">点开地图上的节点后，这里会显示对应的照片和文字。</p>
+              <p id="detailText2">你后面只要补内容，不需要改结构。</p>
+            </div>
+            <div class="story-photo-slot">
+              <img id="detailImage" src="src/1第一次去见你.jpg" alt="第一次去见你" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <nav class="progress" aria-label="章节进度">
       <button class="dot dot-active" data-go-scene="intro" aria-label="开场"></button>

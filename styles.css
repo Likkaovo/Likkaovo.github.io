@@ -102,7 +102,8 @@ button {
     top 0.95s cubic-bezier(0.2, 0.9, 0.2, 1),
     bottom 0.95s cubic-bezier(0.2, 0.9, 0.2, 1),
     translate 0.95s cubic-bezier(0.2, 0.9, 0.2, 1),
-    transform 0.95s cubic-bezier(0.2, 0.9, 0.2, 1);
+    transform 0.95s cubic-bezier(0.2, 0.9, 0.2, 1),
+    opacity 0.3s ease;
 }
 
 .companion-emu {
@@ -139,6 +140,10 @@ body[data-scene-theme="map"] .companion-mzk {
   right: 6%;
   bottom: 7%;
   transform: rotate(12deg) translateY(6px);
+}
+
+body[data-scene-theme="map"] .companion {
+  opacity: 0;
 }
 
 body[data-scene-theme="memory"] .companion-emu {
@@ -393,7 +398,20 @@ h2 {
 
 .map-actions {
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 12px;
+}
+
+.map-actions .primary-btn,
+.map-actions .ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 132px;
+  height: 52px;
+  margin-top: 0;
+  padding: 0 24px;
 }
 
 .map-card {
@@ -402,6 +420,237 @@ h2 {
   gap: 18px;
   height: 100%;
   max-height: 100%;
+}
+
+.journey-card {
+  position: relative;
+  padding: clamp(22px, 3vw, 38px);
+}
+
+.journey-header {
+  flex: 0 0 auto;
+}
+
+.journey-header .hint {
+  margin-bottom: 0;
+}
+
+.journey-stage {
+  position: relative;
+  flex: 0 0 auto;
+  height: clamp(340px, 42vh, 430px);
+  min-height: 340px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(184, 235, 255, 0.62) 0%, rgba(255, 248, 234, 0.72) 62%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0 18px, transparent 18px 36px);
+}
+
+.journey-sky {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 48%;
+  pointer-events: none;
+}
+
+.journey-cloud {
+  position: absolute;
+  width: 116px;
+  height: 38px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 34px 7px 0 rgba(255, 255, 255, 0.58), 66px -8px 0 rgba(255, 255, 255, 0.68);
+}
+
+.cloud-a {
+  top: 34px;
+  left: 10%;
+}
+
+.cloud-b {
+  top: 80px;
+  left: 44%;
+  transform: scale(0.82);
+}
+
+.cloud-c {
+  top: 48px;
+  right: 13%;
+  transform: scale(0.72);
+}
+
+.journey-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.route-track {
+  position: absolute;
+  left: 50%;
+  bottom: 78px;
+  height: 180px;
+  width: 7200px;
+  transform: translateX(0);
+  transition: transform 2.1s cubic-bezier(0.24, 0.85, 0.28, 1);
+}
+
+.route-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 58px;
+  height: 26px;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.5) 0 16px, transparent 16px 34px),
+    linear-gradient(180deg, #82d39e, #57b881);
+  box-shadow: 0 18px 0 rgba(87, 184, 129, 0.28);
+}
+
+.route-flag {
+  position: absolute;
+  bottom: 18px;
+  width: 72px;
+  height: 124px;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  transform: translateX(-50%);
+}
+
+.route-flag::before {
+  content: "";
+  position: absolute;
+  left: 26px;
+  bottom: 0;
+  width: 6px;
+  height: 100px;
+  border-radius: 999px;
+  background: #7e3851;
+}
+
+.route-flag::after {
+  content: "";
+  position: absolute;
+  left: 30px;
+  top: 10px;
+  width: 48px;
+  height: 34px;
+  border-radius: 8px 12px 12px 8px;
+  background: linear-gradient(135deg, var(--coral), #ffb36d);
+  box-shadow: 0 10px 18px rgba(126, 56, 81, 0.16);
+}
+
+.route-flag span {
+  position: absolute;
+  left: 11px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--berry);
+  font-size: 14px;
+  z-index: 1;
+}
+
+.route-flag.is-active {
+  animation: flagPop 0.55s ease both;
+}
+
+.route-flag.is-visited::after {
+  background: linear-gradient(135deg, #8bd4ab, #69bfea);
+}
+
+.map-runners {
+  position: absolute;
+  left: 50%;
+  bottom: 72px;
+  width: 210px;
+  height: 210px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.map-runner {
+  position: absolute;
+  bottom: 0;
+  width: 118px;
+  filter: drop-shadow(0 14px 20px rgba(79, 43, 58, 0.2));
+  animation: walkBob 0.54s ease-in-out infinite alternate;
+}
+
+.runner-emu {
+  left: 0;
+}
+
+.runner-mzk {
+  right: 0;
+  animation-delay: 0.18s;
+}
+
+.map-runners.is-jumping .map-runner {
+  animation: arriveJump 0.62s ease both;
+}
+
+.journey-popup {
+  position: absolute;
+  left: 50%;
+  top: 38px;
+  z-index: 3;
+  width: min(420px, calc(100% - 40px));
+  border: 2px solid rgba(255, 255, 255, 0.84);
+  border-radius: 24px;
+  padding: 20px 24px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  background: rgba(255, 252, 246, 0.9);
+  box-shadow: 0 22px 46px rgba(126, 56, 81, 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -18px) scale(0.96);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.journey-popup.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.journey-popup strong,
+.journey-popup small {
+  display: block;
+}
+
+.popup-eyebrow {
+  color: var(--coral);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.journey-popup strong {
+  margin-top: 6px;
+  font-size: 26px;
+}
+
+.journey-popup small {
+  margin-top: 8px;
+  color: rgba(79, 43, 58, 0.72);
+}
+
+.journey-status {
+  min-height: 22px;
+  color: rgba(79, 43, 58, 0.72);
+  text-align: center;
 }
 
 .map-scroll {
@@ -430,6 +679,50 @@ h2 {
   height: 100%;
   max-height: 100%;
   overflow: hidden;
+}
+
+.memory-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.memory-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.memory-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(79, 43, 58, 0.24);
+  backdrop-filter: blur(10px);
+}
+
+.memory-shell {
+  position: relative;
+  width: min(880px, 100%);
+  max-height: min(680px, calc(100vh - 48px));
+  overflow: hidden;
+  padding: clamp(26px, 4vw, 46px);
+  border: 3px solid rgba(255, 255, 255, 0.84);
+  border-radius: 34px;
+  background: rgba(255, 252, 246, 0.92);
+  box-shadow: 0 28px 80px rgba(79, 43, 58, 0.22);
+}
+
+.memory-shell .story-scroll {
+  max-height: min(430px, calc(100vh - 260px));
+}
+
+.memory-close {
+  margin-bottom: 14px;
 }
 
 .story-scroll {
@@ -700,6 +993,39 @@ h2 {
   }
 }
 
+@keyframes walkBob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes arriveJump {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(-22px) scale(1.04);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes flagPop {
+  0% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-10px) scale(1.08);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+}
+
 @media (max-width: 980px) {
   body {
     overflow: auto;
@@ -738,6 +1064,24 @@ h2 {
     width: min(100%, 760px);
   }
 
+  .journey-stage {
+    min-height: 360px;
+  }
+
+  .route-track {
+    bottom: 66px;
+  }
+
+  .route-ground {
+    bottom: 48px;
+  }
+
+  .map-runners {
+    bottom: 60px;
+    width: 180px;
+    height: 180px;
+  }
+
   .memory-hub,
   .memory-grid,
   .story-split {
@@ -754,5 +1098,13 @@ h2 {
   .companion {
     width: clamp(92px, 24vw, 150px);
     opacity: 0.92;
+  }
+
+  .memory-shell {
+    max-height: calc(100vh - 32px);
+  }
+
+  .memory-shell .story-scroll {
+    max-height: calc(100vh - 220px);
   }
 }
