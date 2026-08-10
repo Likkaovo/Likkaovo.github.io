@@ -1,19 +1,94 @@
 const memories = [
-  { src: "src/1第一次去见你.jpg", title: "第一次去见你" },
-  { src: "src/2第一次一起出cos.jpg", title: "第一次一起出 cos" },
-  { src: "src/3第一次一起去水族馆.jpg", title: "第一次一起去水族馆" },
-  { src: "src/4第一次换一种身份去去见你.jpg", title: "第一次换一种身份去见你" },
-  { src: "src/5第一次牵手.jpg", title: "第一次牵手" },
-  { src: "src/6第一次？？.jpg", title: "第一次？？" },
-  { src: "src/7第一次一起k歌.jpg", title: "第一次一起 K 歌" },
-  { src: "src/8第一次出去旅游.jpg", title: "第一次出去旅游" },
-  { src: "src/9第一次一起去迪士尼.jpg", title: "第一次一起去迪士尼" },
-  { src: "src/10很安心的地方.jpg", title: "很安心的地方" },
-  { src: "src/11第一个一白天.png", title: "第一个一白天" },
-  { src: "src/12去长沙啦.jpg", title: "去长沙啦" },
-  { src: "src/13第一次一起做蛋糕.jpg", title: "第一次一起做蛋糕" },
-  { src: "src/13第一次一起看比赛.jpg", title: "第一次一起看比赛" },
-  { src: "src/14第一次一起经营小铺.jpg", title: "第一次一起经营小铺" },
+  {
+    src: "src/1第一次去见你.jpg",
+    title: "第一次去见你",
+    text: "照片拍摄于跟菜菜一起去地铁站接你们的路上",
+    text2: "长途跋涉中......",
+  },
+  {
+    src: "src/2第一次一起出cos.jpg",
+    title: "第一次一起出 cos",
+    text: "第一次一起出cos逛展子！",
+    text2: "东云姐弟cb99好吗",
+  },
+  {
+    src: "src/3第一次一起去水族馆.jpg",
+    title: "第一次一起去水族馆",
+    text: "25四个娃就这样呆傻。",
+    text2: "其实也是我第一次去水族馆",
+  },
+  {
+    src: "src/4第一次换一种身份去去见你.jpg",
+    title: "第一次换一种身份去见你",
+    text: "仍然记得表白的时候的心动呀",
+    text2: "在火车上根本睡不着，肾上腺素拉满了",
+  },
+  {
+    src: "src/5第一次牵手.jpg",
+    title: "第一次牵手",
+    text: "牵手手啦",
+    text2: "这个人的手冰冰的",
+  },
+  {
+    src: "src/6第一次？？.jpg",
+    title: "第一次？？",
+    text: "额第一次",
+    text2: "住电竞酒店对",
+  },
+  {
+    src: "src/7第一次一起k歌.jpg",
+    title: "第一次一起 K 歌",
+    text: "两个少女乐队p去k歌唱的是什么我都不用说",
+    text2: "为什么要演奏春日影",
+  },
+  {
+    src: "src/8第一次出去旅游.jpg",
+    title: "第一次出去旅游",
+    text: "去苏州！",
+    text2: "你就拿着你那个棉花娃娃吧。。。（苏州的谷店我爱你）",
+  },
+  {
+    src: "src/9第一次一起去迪士尼.jpg",
+    title: "第一次一起去迪士尼",
+    text: "为你带来梦幻的一天（",
+    text2: "累死了",
+  },
+  {
+    src: "src/10很安心的地方.jpg",
+    title: "很安心的地方",
+    text: "你说坐在这里就很安心",
+    text2: "现在有空随时可以去坐呀",
+  },
+  {
+    src: "src/11第一个一百天.png",
+    title: "第一个一百天",
+    text: "一百天！",
+    text2: "那天发生啥了忘了。",
+  },
+  {
+    src: "src/12去长沙啦.jpg",
+    title: "去长沙啦",
+    text: "第一次出了个大远门啊",
+    text2: "仍然记得吃饭好辣。辣的我都不敢吃了",
+  },
+  {
+    src: "src/13第一次一起做蛋糕.jpg",
+    title: "第一次一起做蛋糕",
+    text: "两白天！。",
+    text2: "烘焙的姐姐手法确实熟练，蛋糕也很好吃，很开心！",
+  },
+  {
+    src: "src/13第一次一起看比赛.jpg",
+    title: "第一次一起看比赛",
+    text: "体验一下氛围）",
+    text2: "也是赚回门票钱了，抽到了小手枪",
+  },
+  {
+    src: "src/14第一次一起经营小铺.jpg",
+    title: "第一次一起经营小铺",
+    text: "在上海最有牵挂的一起做的一件事",
+    text2: "希望能大麦。",
+  },
 ];
 
 const rollPhotos = [
@@ -87,11 +162,6 @@ const sceneThemes = {
   final: "final",
 };
 
-const detailCopyTemplates = [
-  "这张照片本身就已经是这段回忆的标题，后面你只需要把那天最想说的一句话补进去。",
-  "如果你想继续细化内容，可以写当时发生了什么、你记住了什么、为什么这件事会一直留到现在。",
-];
-
 const FLAG_SPACING = 460;
 const SPRINT_FLAG_COUNT = 10;
 const BIRTHDAY_AGE = 21;
@@ -151,7 +221,7 @@ function setupBgm() {
 
   bgm.loop = true;
   bgm.volume = 0.42;
-  updateMusicButton(!bgm.paused);
+  updateMusicButton(false);
   playBgm();
 
   const unlockMusic = (event) => {
@@ -166,6 +236,18 @@ function setupBgm() {
 
   window.addEventListener("pointerdown", unlockMusic, { once: true });
   window.addEventListener("keydown", unlockMusic, { once: true });
+  window.addEventListener("pageshow", () => {
+    if (bgm.paused) {
+      playBgm();
+    }
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && bgm.paused) {
+      playBgm();
+    }
+  });
+  bgm.addEventListener("canplay", playBgm, { once: true });
+  bgm.addEventListener("loadeddata", playBgm, { once: true });
 
   musicToggle.addEventListener("click", async (event) => {
     event.stopPropagation();
@@ -419,8 +501,8 @@ function updateDetail(index) {
 
   detailEyebrow.textContent = `Memory ${String(index + 1).padStart(2, "0")}`;
   detailTitle.textContent = memory.title;
-  detailText.textContent = `这一页对应的是“${memory.title}”。你可以把当时最想写下来的那一句话，直接补在这里。`;
-  detailText2.textContent = detailCopyTemplates[index % detailCopyTemplates.length];
+  detailText.textContent = memory.text;
+  detailText2.textContent = memory.text2;
   detailImageSlot.classList.remove("is-broken");
   detailImageSlot.innerHTML = `<img src="${memory.src}" alt="${memory.title}" />`;
 
@@ -589,9 +671,17 @@ setInterval(() => {
   document.body.classList.toggle("stroll-step");
 }, 2200);
 
-renderJourney();
-renderRollPhotos();
-setupBgm();
-updateDetail(0);
-moveGroundTo(0);
-showScene(currentScene);
+function bootApp() {
+  renderJourney();
+  renderRollPhotos();
+  setupBgm();
+  updateDetail(0);
+  moveGroundTo(0);
+  showScene(currentScene);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootApp, { once: true });
+} else {
+  bootApp();
+}
