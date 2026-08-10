@@ -13,12 +13,20 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <audio id="bgm" src="src/music/乐园梦游记.mp3" preload="auto" autoplay loop></audio>
+
     <div class="sparkles" aria-hidden="true"></div>
+    <div class="rolling-photos" id="rollingPhotos" aria-hidden="true"></div>
 
     <header class="top-bar">
       <div class="brand">Birthday Quest</div>
       <div class="brand-note">给最可爱的她的一份小惊喜</div>
     </header>
+
+    <button class="music-toggle" id="musicToggle" type="button" aria-label="暂停背景音乐" aria-pressed="true">
+      <span class="music-icon" aria-hidden="true">♪</span>
+      <span class="music-label">音乐播放中</span>
+    </button>
 
     <div class="companion-layer" aria-hidden="true">
       <img class="companion companion-emu" src="src/emu.png" alt="" />
@@ -89,24 +97,27 @@
       </section>
 
       <section class="scene" data-scene="album">
-        <div class="scene-layout">
-          <div class="content-card album-card">
-            <div class="album-header">
-              <div>
-                <p class="eyebrow">Stage 03 · Photo Album</p>
-                <h2>回忆卡片簿</h2>
-                <p class="hint">这里改成了可上下滑动的相册区，后面照片多了也能继续往下加。</p>
+        <div class="wish-scene">
+          <div class="wish-vignette" id="wishVignette" aria-hidden="true"></div>
+
+          <div class="wish-center">
+            <div class="birthday-table">
+              <div class="wish-cake" id="wishCake" aria-hidden="true">
+                <span class="wish-flame"></span>
+                <span class="wish-candle"></span>
+                <span class="wish-cake-icing"></span>
+                <span class="wish-cake-body"></span>
+                <span class="wish-plate"></span>
               </div>
-              <button class="ghost-btn back-chip" type="button" data-back-to="map">返回总地图</button>
-            </div>
 
-            <div class="album-scroll">
-              <div class="memory-grid" id="albumGrid"></div>
-            </div>
-
-            <div class="album-footer">
-              <p>这里后面只要继续复制一张回忆卡片，就可以一直往下加照片。</p>
-              <button class="primary-btn" data-next-scene="final">前往生日结尾</button>
+              <div class="wish-card">
+                <p class="eyebrow">Stage 03 · Birthday Wish</p>
+                <h2>先许一个愿吧</h2>
+                <p>
+                  这一路走到这里，回忆已经铺满了背景。现在轮到生日蛋糕登场。
+                </p>
+                <button class="primary-btn" id="blowCandles" type="button">吹灭蜡烛打开贺卡</button>
+              </div>
             </div>
           </div>
         </div>
@@ -114,15 +125,21 @@
 
       <section class="scene" data-scene="final">
         <div class="scene-layout">
-          <div class="content-card final-card">
-            <p class="eyebrow">Final Stage · Wish</p>
-            <h2>新一岁也要闪闪发光</h2>
-            <p>
-              愿你在新的一岁里继续被温柔对待，继续自由地开心、期待、发光。
-              谢谢你出现在我的生活里，也谢谢你让很多平凡的一天都变得值得收藏。
-            </p>
-
-            <div class="cake-wrap" aria-hidden="true">
+          <div class="content-card final-card letter-card">
+            <p class="eyebrow">Final Stage · Birthday Letter</p>
+            <h2>给新一岁的你</h2>
+            <div class="letter-copy">
+              <p>
+                生日快乐。谢谢你把很多普通日子，变成我会反复想起的剧情。
+              </p>
+              <p>
+                希望 21 岁的你继续被喜欢的事情拥抱，继续自由、明亮、可爱，也继续拥有很多不用费力就能开心起来的瞬间。
+              </p>
+              <p>
+                之后也一起走吧。慢慢走、认真走，把新的地图一点一点点亮。
+              </p>
+            </div>
+            <div class="summoned-cake" id="summonedCake" aria-hidden="true">
               <div class="cake">
                 <span class="flame"></span>
                 <span class="candle"></span>
@@ -130,9 +147,8 @@
                 <span class="cake-bottom"></span>
               </div>
             </div>
-
             <div class="action-row">
-              <button class="primary-btn" id="wishButton">许愿并吹蜡烛</button>
+              <button class="primary-btn" id="summonCake" type="button">召唤蛋糕</button>
               <button class="ghost-btn" data-back-to="map">回到总地图</button>
             </div>
           </div>
@@ -163,8 +179,8 @@
     <nav class="progress" aria-label="章节进度">
       <button class="dot dot-active" data-go-scene="intro" aria-label="开场"></button>
       <button class="dot" data-go-scene="map" aria-label="地图"></button>
-      <button class="dot" data-go-scene="album" aria-label="相册"></button>
-      <button class="dot" data-go-scene="final" aria-label="结尾"></button>
+      <button class="dot" data-go-scene="album" aria-label="许愿"></button>
+      <button class="dot" data-go-scene="final" aria-label="贺卡"></button>
     </nav>
 
     <script src="script.js"></script>

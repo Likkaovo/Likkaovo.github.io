@@ -16,12 +16,55 @@ const memories = [
   { src: "src/14第一次一起经营小铺.jpg", title: "第一次一起经营小铺" },
 ];
 
+const rollPhotos = [
+  "src/roll/251141.JPG",
+  "src/roll/7051076b03e6bda5a8b1eb8e2276be64.JPG",
+  "src/roll/e9a7b23e7a73cd00cf28371fcec51520.JPG",
+  "src/roll/IMG_0244.JPG",
+  "src/roll/IMG_0245.JPG",
+  "src/roll/IMG_0479.JPG",
+  "src/roll/IMG_7845.JPG",
+  "src/roll/IMG_8116.JPG",
+  "src/roll/IMG_8128.JPG",
+  "src/roll/IMG_8134.JPG",
+  "src/roll/IMG_8145.JPG",
+  "src/roll/IMG_8457.JPG",
+  "src/roll/IMG_8615.JPG",
+  "src/roll/IMG_8622.JPG",
+  "src/roll/IMG_8628.JPG",
+  "src/roll/IMG_8642.JPG",
+  "src/roll/IMG_8655.JPG",
+  "src/roll/IMG_8703.JPG",
+  "src/roll/IMG_8759.JPG",
+  "src/roll/IMG_8765.JPG",
+  "src/roll/IMG_8889.JPG",
+  "src/roll/IMG_8942.PNG",
+  "src/roll/IMG_9117.JPG",
+  "src/roll/IMG_9311.JPG",
+  "src/roll/IMG_9371.JPG",
+  "src/roll/IMG_9395.JPG",
+  "src/roll/IMG_9401.JPG",
+  "src/roll/IMG_9413.JPG",
+  "src/roll/IMG_9628.JPG",
+  "src/roll/IMG_9632.JPG",
+  "src/roll/IMG_9633.JPG",
+  "src/roll/IMG_9654.JPG",
+  "src/roll/IMG_9663.JPG",
+];
+
 const scenes = [...document.querySelectorAll(".scene")];
 const dots = [...document.querySelectorAll(".dot")];
 const nextSceneButtons = document.querySelectorAll("[data-next-scene]");
 const backButtons = document.querySelectorAll("[data-back-to]");
+const albumScene = document.querySelector('[data-scene="album"]');
+const finalScene = document.querySelector('[data-scene="final"]');
 const wishButton = document.querySelector("#wishButton");
-const albumGrid = document.querySelector("#albumGrid");
+const summonCakeButton = document.querySelector("#summonCake");
+const bgm = document.querySelector("#bgm");
+const musicToggle = document.querySelector("#musicToggle");
+const rollingPhotos = document.querySelector("#rollingPhotos");
+const wishCake = document.querySelector("#wishCake");
+const wishVignette = document.querySelector("#wishVignette");
 const routeTrack = document.querySelector("#routeTrack");
 const mapRunners = document.querySelector("#mapRunners");
 const journeyPopup = document.querySelector("#journeyPopup");
@@ -50,16 +93,95 @@ const detailCopyTemplates = [
 ];
 
 const FLAG_SPACING = 460;
+const SPRINT_FLAG_COUNT = 10;
+const BIRTHDAY_AGE = 21;
+const FINAL_CARD = {
+  eyebrow: "Next Stage",
+  title: "携手走进新的一岁",
+  hint: "点开进入下一页",
+};
+
 const journey = {
   index: 0,
+  trackIndex: 0,
   activeTimer: null,
   isPopupOpen: false,
   isDetailOpen: false,
   isFinished: false,
   hasStarted: false,
+  phase: "memories",
 };
 
 let currentScene = "intro";
+
+function updateMusicButton(isPlaying) {
+  if (!musicToggle) {
+    return;
+  }
+
+  musicToggle.classList.toggle("is-paused", !isPlaying);
+  musicToggle.setAttribute("aria-pressed", String(isPlaying));
+  musicToggle.setAttribute("aria-label", isPlaying ? "暂停背景音乐" : "播放背景音乐");
+  const label = musicToggle.querySelector(".music-label");
+  if (label) {
+    label.textContent = isPlaying ? "音乐播放中" : "播放音乐";
+  }
+}
+
+async function playBgm() {
+  if (!bgm) {
+    return false;
+  }
+
+  try {
+    bgm.volume = 0.42;
+    await bgm.play();
+    updateMusicButton(true);
+    return true;
+  } catch {
+    updateMusicButton(false);
+    return false;
+  }
+}
+
+function setupBgm() {
+  if (!bgm || !musicToggle) {
+    return;
+  }
+
+  bgm.loop = true;
+  bgm.volume = 0.42;
+  updateMusicButton(!bgm.paused);
+  playBgm();
+
+  const unlockMusic = (event) => {
+    if (event.target instanceof Element && event.target.closest("#musicToggle")) {
+      return;
+    }
+
+    if (bgm.paused) {
+      playBgm();
+    }
+  };
+
+  window.addEventListener("pointerdown", unlockMusic, { once: true });
+  window.addEventListener("keydown", unlockMusic, { once: true });
+
+  musicToggle.addEventListener("click", async (event) => {
+    event.stopPropagation();
+
+    if (bgm.paused) {
+      await playBgm();
+      return;
+    }
+
+    bgm.pause();
+    updateMusicButton(false);
+  });
+
+  bgm.addEventListener("play", () => updateMusicButton(true));
+  bgm.addEventListener("pause", () => updateMusicButton(false));
+}
 
 function buildBrokenMarkup(title) {
   return `
@@ -93,27 +215,42 @@ function setJourneyTimer(callback, delay) {
 }
 
 function renderJourney() {
-  routeTrack.innerHTML = memories
-    .map(
-      (_, index) => `
+  const totalFlags = memories.length + SPRINT_FLAG_COUNT;
+
+  routeTrack.style.width = `${(totalFlags + 3) * FLAG_SPACING}px`;
+  routeTrack.innerHTML = Array.from({ length: totalFlags })
+    .map((_, index) => {
+      const isBonusFlag = index >= memories.length;
+      const isFinalFlag = index === totalFlags - 1;
+      const label = isFinalFlag ? BIRTHDAY_AGE : index + 1;
+
+      return `
         <button
-          class="route-flag"
+          class="route-flag ${isBonusFlag ? "route-flag-bonus" : ""} ${
+            isBonusFlag && !isFinalFlag ? "route-flag-unlabeled" : ""
+          }"
           type="button"
           data-route-index="${index}"
           style="left: ${index * FLAG_SPACING}px"
-          aria-label="Memory ${index + 1}"
+          aria-label="Route flag ${index + 1}"
         >
-          <span>${String(index + 1).padStart(2, "0")}</span>
+          <span>${isBonusFlag && !isFinalFlag ? "" : String(label).padStart(2, "0")}</span>
         </button>
-      `,
-    )
+      `;
+    })
     .join("");
 
   routeTrack.querySelectorAll("[data-route-index]").forEach((flag) => {
     flag.addEventListener("click", () => {
       const index = Number(flag.dataset.routeIndex);
 
-      if (index === journey.index && currentScene === "map" && !journey.isDetailOpen) {
+      if (
+        index === journey.trackIndex &&
+        index < memories.length &&
+        journey.phase !== "sprint" &&
+        currentScene === "map" &&
+        !journey.isDetailOpen
+      ) {
         journey.index = index;
         arriveAtCurrentFlag();
       }
@@ -125,8 +262,8 @@ function updateFlagState() {
   routeTrack.querySelectorAll("[data-route-index]").forEach((flag) => {
     const index = Number(flag.dataset.routeIndex);
 
-    flag.classList.toggle("is-active", index === journey.index && journey.isPopupOpen);
-    flag.classList.toggle("is-visited", index < journey.index);
+    flag.classList.toggle("is-active", index === journey.trackIndex && journey.isPopupOpen);
+    flag.classList.toggle("is-visited", index < journey.trackIndex);
   });
 }
 
@@ -149,15 +286,19 @@ function advanceJourney() {
   }
 
   if (journey.index >= memories.length) {
-    finishJourney();
+    startFinalSprint();
     return;
   }
 
   journey.isPopupOpen = false;
+  journey.phase = "memories";
+  journey.trackIndex = journey.index;
+  routeTrack.classList.remove("is-sprinting");
+  mapRunners.classList.remove("is-sprinting");
   journeyPopup.classList.remove("is-visible");
   updateFlagState();
   journeyStatus.textContent = `前往第 ${journey.index + 1} 站`;
-  moveGroundTo(journey.index);
+  moveGroundTo(journey.trackIndex);
   setJourneyTimer(() => arriveAtCurrentFlag(), journey.index === 0 ? 650 : 2200);
 }
 
@@ -169,8 +310,10 @@ function arriveAtCurrentFlag() {
   const memory = memories[journey.index];
 
   journey.isPopupOpen = true;
+  journey.trackIndex = journey.index;
   popupEyebrow.textContent = `Memory ${String(journey.index + 1).padStart(2, "0")}`;
   popupTitle.textContent = memory.title;
+  journeyPopup.querySelector("small").textContent = "点开查看这一段回忆";
   journeyStatus.textContent = `抵达：${memory.title}`;
   mapRunners.classList.add("is-jumping");
   updateFlagState();
@@ -181,21 +324,63 @@ function arriveAtCurrentFlag() {
   }, 520);
 }
 
-function finishJourney() {
-  journey.isFinished = true;
+function startFinalSprint() {
+  journey.phase = "sprint";
   journey.isPopupOpen = false;
   journeyPopup.classList.remove("is-visible");
-  journeyStatus.textContent = "所有回忆都已经走完啦";
+  routeTrack.classList.add("is-sprinting");
+  mapRunners.classList.add("is-sprinting");
+  journeyStatus.textContent = "向新的一岁冲刺";
   updateFlagState();
+  sprintPastBonusFlags(1);
+}
+
+function sprintPastBonusFlags(step) {
+  if (currentScene !== "map" || journey.phase !== "sprint") {
+    return;
+  }
+
+  if (step > SPRINT_FLAG_COUNT) {
+    arriveAtFinalFlag();
+    return;
+  }
+
+  journey.trackIndex = memories.length + step - 1;
+  moveGroundTo(journey.trackIndex);
+  updateFlagState();
+  setJourneyTimer(() => sprintPastBonusFlags(step + 1), 190);
+}
+
+function arriveAtFinalFlag() {
+  journey.isFinished = true;
+  journey.isPopupOpen = true;
+  journey.phase = "final";
+  routeTrack.classList.remove("is-sprinting");
+  mapRunners.classList.remove("is-sprinting");
+  popupEyebrow.textContent = FINAL_CARD.eyebrow;
+  popupTitle.textContent = FINAL_CARD.title;
+  journeyPopup.querySelector("small").textContent = FINAL_CARD.hint;
+  journeyStatus.textContent = FINAL_CARD.title;
+  mapRunners.classList.add("is-jumping");
+  updateFlagState();
+
+  setJourneyTimer(() => {
+    mapRunners.classList.remove("is-jumping");
+    journeyPopup.classList.add("is-visible");
+  }, 520);
 }
 
 function restartJourneyFlow() {
   clearJourneyTimer();
   journey.index = 0;
+  journey.trackIndex = 0;
   journey.isPopupOpen = false;
   journey.isDetailOpen = false;
   journey.isFinished = false;
   journey.hasStarted = false;
+  journey.phase = "memories";
+  routeTrack.classList.remove("is-sprinting");
+  mapRunners.classList.remove("is-sprinting");
   journeyPopup.classList.remove("is-visible");
   memoryOverlay.classList.remove("is-open");
   memoryOverlay.setAttribute("aria-hidden", "true");
@@ -205,33 +390,28 @@ function restartJourneyFlow() {
   startJourney();
 }
 
-function renderAlbum() {
-  albumGrid.innerHTML = memories
+function renderRollPhotos() {
+  const imageSet = rollPhotos
     .map(
-      (memory) => `
-        <button class="memory-card" type="button">
-          <span class="photo-slot">
-            <img src="${memory.src}" alt="${memory.title}" />
-          </span>
-          <strong>${memory.title}</strong>
-          <small>点击翻开</small>
-        </button>
-      `,
+      (src, index) => `
+          <div class="photo-tile">
+            <img src="${src}" alt="滚动照片 ${index + 1}" />
+          </div>
+        `,
     )
     .join("");
 
-  albumGrid.querySelectorAll(".memory-card").forEach((card, index) => {
-    const image = card.querySelector("img");
-
-    applyImageFallback(image, memories[index].title);
-    card.addEventListener("click", () => {
-      const tip = card.querySelector("small");
-      card.classList.toggle("revealed");
-      tip.textContent = card.classList.contains("revealed")
-        ? "这张已经放进回忆册啦"
-        : "点击翻开";
-    });
-  });
+  rollingPhotos.innerHTML = `
+    <div class="photo-band one">
+      <div class="photo-strip">${imageSet}${imageSet}</div>
+    </div>
+    <div class="photo-band two">
+      <div class="photo-strip">${imageSet}${imageSet}</div>
+    </div>
+    <div class="photo-band three">
+      <div class="photo-strip">${imageSet}${imageSet}</div>
+    </div>
+  `;
 }
 
 function updateDetail(index) {
@@ -266,6 +446,7 @@ function closeMemory() {
   memoryOverlay.setAttribute("aria-hidden", "true");
   journeyPopup.classList.remove("is-visible");
   journey.index += 1;
+  journey.trackIndex = journey.index;
   updateFlagState();
 
   if (currentScene === "map") {
@@ -288,6 +469,8 @@ function showScene(sceneName) {
   document.body.dataset.sceneTheme = sceneThemes[currentScene] || "intro";
 
   if (currentScene === "map") {
+    document.body.classList.remove("wish-dark");
+    wishScene.classList.remove("candles-out", "is-dark");
     if (journey.isFinished) {
       updateFlagState();
     } else if (!journey.hasStarted) {
@@ -295,7 +478,29 @@ function showScene(sceneName) {
     } else if (!journey.isPopupOpen && !journey.isDetailOpen) {
       setJourneyTimer(() => advanceJourney(), 350);
     }
+  } else if (currentScene === "album") {
+    resetWishScene();
+    clearJourneyTimer();
+    memoryOverlay.classList.remove("is-open");
+    memoryOverlay.setAttribute("aria-hidden", "true");
+    journey.isDetailOpen = false;
+    journey.isPopupOpen = false;
+    journeyPopup.classList.remove("is-visible");
+  } else if (currentScene === "final") {
+    if (wishScene.classList.contains("candles-out")) {
+      document.body.classList.add("wish-dark");
+    }
+    summonedCake.classList.remove("is-visible");
+    summonCakeButton.textContent = "召唤蛋糕";
+    clearJourneyTimer();
+    memoryOverlay.classList.remove("is-open");
+    memoryOverlay.setAttribute("aria-hidden", "true");
+    journey.isDetailOpen = false;
+    journey.isPopupOpen = false;
+    journeyPopup.classList.remove("is-visible");
   } else {
+    document.body.classList.remove("wish-dark");
+    wishScene.classList.remove("candles-out", "is-dark");
     clearJourneyTimer();
     memoryOverlay.classList.remove("is-open");
     memoryOverlay.setAttribute("aria-hidden", "true");
@@ -318,6 +523,11 @@ backButtons.forEach((button) => {
 });
 
 journeyPopup.addEventListener("click", () => {
+  if (journey.phase === "final") {
+    showScene("album");
+    return;
+  }
+
   openMemory(journey.index);
 });
 
@@ -326,6 +536,41 @@ closeMemoryButtons.forEach((button) => {
 });
 
 restartJourney.addEventListener("click", () => restartJourneyFlow());
+
+function extinguishCake() {
+  wishScene.classList.add("candles-out");
+  wishScene.classList.add("is-dark");
+  document.body.classList.add("wish-dark");
+}
+
+const wishScene = albumScene.querySelector(".wish-scene");
+const blowCandlesButton = document.querySelector("#blowCandles");
+const summonedCake = document.querySelector("#summonedCake");
+
+function resetWishScene() {
+  wishScene.classList.remove("candles-out", "is-dark");
+  document.body.classList.remove("wish-dark");
+  blowCandlesButton.disabled = false;
+  blowCandlesButton.textContent = "吹灭蜡烛打开贺卡";
+}
+
+blowCandlesButton.addEventListener("click", () => {
+  blowCandlesButton.disabled = true;
+  blowCandlesButton.textContent = "贺卡正在打开";
+  extinguishCake();
+  setJourneyTimer(() => showScene("final"), 1400);
+});
+
+summonCakeButton.addEventListener("click", () => {
+  if (summonedCake.classList.contains("is-visible")) {
+    summonedCake.classList.remove("is-visible");
+    summonCakeButton.textContent = "召唤蛋糕";
+    return;
+  }
+
+  summonedCake.classList.add("is-visible");
+  summonCakeButton.textContent = "收起蛋糕";
+});
 
 if (wishButton) {
   wishButton.addEventListener("click", () => {
@@ -345,7 +590,8 @@ setInterval(() => {
 }, 2200);
 
 renderJourney();
-renderAlbum();
+renderRollPhotos();
+setupBgm();
 updateDetail(0);
 moveGroundTo(0);
 showScene(currentScene);
